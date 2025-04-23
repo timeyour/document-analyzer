@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档分析互动页面</title>
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .analysis-result {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="upload-area">
+            <h2>上传文档</h2>
+            <input type="file" id="fileInput" accept=".txt,.doc,.docx,.pdf">
+        </div>
+        
+        <div class="analysis-result" id="result">
+            <h2>分析结果</h2>
+            <div id="wordCount"></div>
+            <div id="keywordsList"></div>
+            <div id="summary"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 文件读取和分析
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const text = event.target.result;
+                
+                // 显示分析结果
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+
+                // 字数统计
+                const wordCount = text.trim().split(/\s+/).length;
+                document.getElementById('wordCount').innerHTML = `
+                    <h3>字数统计</h3>
+                    <p>总字数：${wordCount}</p>
+                `;
+
+                // 关键词提取
+                const keywords = extractKeywords(text);
+                document.getElementById('keywordsList').innerHTML = `
+                    <h3>关键词</h3>
+                    <p>${keywords.join(', ')}</p>
+                `;
+
+                // 生成摘要
+                const summary = generateSummary(text);
+                document.getElementById('summary').innerHTML = `
+                    <h3>文档摘要</h3>
+                    <p>${summary}</p>
+                `;
+            };
+            reader.readAsText(file);
+        });
+
+        // 关键词提取函数
+        function extractKeywords(text) {
+            // 简单的关键词提取实现
+            const words = text.toLowerCase().match(/\b\w+\b/g);
+            const wordFreq = {};
+            words.forEach(word => {
+                wordFreq[word] = (wordFreq[word] || 0) + 1;
+            });
+            return Object.entries(wordFreq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([word]) => word);
+        }
+
+        // 生成摘要函数
+        function generateSummary(text) {
+            // 简单的摘要生成实现
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+            return sentences.slice(0, 3).join(' ');
+        }
+    </script>
+</body>
+</html>
